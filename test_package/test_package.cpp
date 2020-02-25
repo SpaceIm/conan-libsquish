@@ -24,7 +24,7 @@ void testTwoColour(int flags) {
 
   double avg = 0.0;
   double min = std::numeric_limits<double>::max();
-  double max = std::numeric_limits<double>::lowest();
+  double max = - std::numeric_limits<double>::max();
   int counter = 0;
 
   // test all single-channel colours
