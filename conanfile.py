@@ -16,12 +16,14 @@ class LibsquishConan(ConanFile):
     options = {
         "shared": [True, False],
         "fPIC": [True, False],
-        "openmp": [True, False]
+        "openmp": [True, False],
+        "simd": ["None", "sse", "altivec"]
     }
     default_options = {
         "shared": False,
         "fPIC": True,
-        "openmp": False
+        "openmp": False,
+        "simd": "sse"
     }
 
     _cmake = None
@@ -54,8 +56,8 @@ class LibsquishConan(ConanFile):
             return self._cmake
         self._cmake = CMake(self)
         self._cmake.definitions["BUILD_SQUISH_WITH_OPENMP"] = self.options.openmp
-        self._cmake.definitions["BUILD_SQUISH_WITH_SSE2"] = True
-        self._cmake.definitions["BUILD_SQUISH_WITH_ALTIVEC"] = False
+        self._cmake.definitions["BUILD_SQUISH_WITH_SSE2"] = str(self.options.simd) == "sse"
+        self._cmake.definitions["BUILD_SQUISH_WITH_ALTIVEC"] = str(self.options.simd) == "altivec"
         self._cmake.definitions["BUILD_SQUISH_EXTRA"] = False
         self._cmake.configure(build_folder=self._build_subfolder)
         return self._cmake
