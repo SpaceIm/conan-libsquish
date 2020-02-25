@@ -21,7 +21,7 @@ class LibsquishConan(ConanFile):
     default_options = {
         "shared": False,
         "fPIC": True,
-        "openmp": True
+        "openmp": False
     }
 
     _cmake = None
