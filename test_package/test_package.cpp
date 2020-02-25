@@ -1,15 +1,11 @@
 #include <squish.h>
 
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <iostream>
 #include <limits>
 
-typedef std::array<squish::u8, 4 * 16> RgbaBlock;
-typedef std::array<squish::u8, 16> DxtBlock;
-
-double getColourError(const RgbaBlock &a, const RgbaBlock &b) {
+double getColourError(const squish::u8 *a, const squish::u8 *b) {
   double error = 0.0;
   for (int i = 0; i < 16; ++i) {
     for (int j = 0; j < 3; ++j) {
@@ -22,9 +18,9 @@ double getColourError(const RgbaBlock &a, const RgbaBlock &b) {
 }
 
 void testTwoColour(int flags) {
-  RgbaBlock input;
-  RgbaBlock output;
-  DxtBlock block;
+  squish::u8 input[4 * 16];
+  squish::u8 output[4 * 16];
+  squish::u8 block[16];
 
   double avg = 0.0;
   double min = std::numeric_limits<double>::max();
@@ -45,8 +41,8 @@ void testTwoColour(int flags) {
         }
 
         // compress and decompress
-        squish::Compress(input.data(), block.data(), flags);
-        squish::Decompress(output.data(), block.data(), flags);
+        squish::Compress(input, block, flags);
+        squish::Decompress(output, block, flags);
 
         // test the results
         double rm = getColourError(input, output);
