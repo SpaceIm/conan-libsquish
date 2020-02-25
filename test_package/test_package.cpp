@@ -6,10 +6,10 @@
 #include <iostream>
 #include <limits>
 
-using RGBA4x4Block = std::array<squish::u8, 4 * 16>;
-using DXTBlock = std::array<squish::u8, 16>;
+typedef std::array<squish::u8, 4 * 16> RgbaBlock;
+typedef std::array<squish::u8, 16> DxtBlock;
 
-double getColourError(const RGBA4x4Block &a, const RGBA4x4Block &b) {
+double getColourError(const RgbaBlock &a, const RgbaBlock &b) {
   double error = 0.0;
   for (int i = 0; i < 16; ++i) {
     for (int j = 0; j < 3; ++j) {
@@ -22,9 +22,9 @@ double getColourError(const RGBA4x4Block &a, const RGBA4x4Block &b) {
 }
 
 void testTwoColour(int flags) {
-  RGBA4x4Block input;
-  RGBA4x4Block output;
-  DXTBlock block;
+  RgbaBlock input;
+  RgbaBlock output;
+  DxtBlock block;
 
   double avg = 0.0;
   double min = std::numeric_limits<double>::max();
