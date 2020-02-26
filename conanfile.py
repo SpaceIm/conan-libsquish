@@ -42,9 +42,9 @@ class LibsquishConan(ConanFile):
             del self.options.fPIC
 
     def configure(self):
-        if self.simd_intrinsics == "sse2" and self.settings.arch not in ["x86", "x86_64"]:
+        if self.options.simd_intrinsics == "sse2" and self.settings.arch not in ["x86", "x86_64"]:
             raise ConanInvalidConfiguration("SSE2 is not supported on {}".format(self.settings.arch))
-        if self.simd_intrinsics == "altivec" and self.settings.arch not in ["ppc32be", "ppc32", "ppc64le", "ppc64"]:
+        if self.options.simd_intrinsics == "altivec" and self.settings.arch not in ["ppc32be", "ppc32", "ppc64le", "ppc64"]:
             raise ConanInvalidConfiguration("Altivec is not supported on {}".format(self.settings.arch))
 
     def source(self):
