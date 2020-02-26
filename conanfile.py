@@ -1,7 +1,6 @@
 import os
 
 from conans import ConanFile, CMake, tools
-from conans.errors import ConanInvalidConfiguration
 
 class LibsquishConan(ConanFile):
     name = "libsquish"
@@ -18,13 +17,15 @@ class LibsquishConan(ConanFile):
         "shared": [True, False],
         "fPIC": [True, False],
         "openmp": [True, False],
-        "simd_intrinsics": ["None", "sse2", "altivec"]
+        "sse2_intrinsics": [True, False],
+        "altivec_intrinsics": [True, False]
     }
     default_options = {
         "shared": False,
         "fPIC": True,
-        "openmp": True,
-        "simd_intrinsics": "None"
+        "openmp": False,
+        "sse2_intrinsics": False,
+        "altivec_intrinsics": False
     }
 
     _cmake = None
@@ -37,15 +38,21 @@ class LibsquishConan(ConanFile):
     def _build_subfolder(self):
         return "build_subfolder"
 
+    @property
+    def _sse2_compliant_archs(self):
+        return ["x86", "x86_64"]
+
+    @property
+    def _altivec_compliant_archs(self):
+        return ["ppc32be", "ppc32", "ppc64le", "ppc64"]
+
     def config_options(self):
         if self.settings.os == "Windows":
             del self.options.fPIC
-
-    def configure(self):
-        if self.options.simd_intrinsics == "sse2" and self.settings.arch not in ["x86", "x86_64"]:
-            raise ConanInvalidConfiguration("SSE2 is not supported on {}".format(self.settings.arch))
-        if self.options.simd_intrinsics == "altivec" and self.settings.arch not in ["ppc32be", "ppc32", "ppc64le", "ppc64"]:
-            raise ConanInvalidConfiguration("Altivec is not supported on {}".format(self.settings.arch))
+        if self.settings.arch not in self._sse2_compliant_archs:
+            del self.options.sse2_intrinsics
+        if self.settings.arch not in self._altivec_compliant_archs:
+            del self.options.altivec_intrinsics
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version],
@@ -62,8 +69,14 @@ class LibsquishConan(ConanFile):
             return self._cmake
         self._cmake = CMake(self)
         self._cmake.definitions["BUILD_SQUISH_WITH_OPENMP"] = self.options.openmp
-        self._cmake.definitions["BUILD_SQUISH_WITH_SSE2"] = str(self.options.simd_intrinsics) == "sse2"
-        self._cmake.definitions["BUILD_SQUISH_WITH_ALTIVEC"] = str(self.options.simd_intrinsics) == "altivec"
+        if self.settings.arch in self._sse2_compliant_archs:
+            self._cmake.definitions["BUILD_SQUISH_WITH_SSE2"] = self.options.sse2_intrinsics
+        else:
+            self._cmake.definitions["BUILD_SQUISH_WITH_SSE2"] = False
+        if self.settings.arch in self._altivec_compliant_archs:
+            self._cmake.definitions["BUILD_SQUISH_WITH_ALTIVEC"] = self.options.altivec_intrinsics
+        else:
+            self._cmake.definitions["BUILD_SQUISH_WITH_ALTIVEC"] = False
         self._cmake.definitions["BUILD_SQUISH_EXTRA"] = False
         self._cmake.configure(build_folder=self._build_subfolder)
         return self._cmake
