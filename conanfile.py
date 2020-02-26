@@ -10,20 +10,20 @@ class LibsquishConan(ConanFile):
     topics = ("conan", "libsquish", "image", "compression", "dxt", "s3tc")
     homepage = "https://sourceforge.net/projects/libsquish"
     url = "https://github.com/conan-io/conan-center-index"
-    exports_sources = "CMakeLists.txt"
+    exports_sources = ["CMakeLists.txt", "patches/**"]
     generators = "cmake"
     settings = "os", "arch", "compiler", "build_type"
     options = {
         "shared": [True, False],
         "fPIC": [True, False],
         "openmp": [True, False],
-        "simd": ["None", "sse", "altivec"]
+        "simd": ["None", "sse2", "altivec"]
     }
     default_options = {
         "shared": False,
         "fPIC": True,
         "openmp": False,
-        "simd": "sse"
+        "simd": "sse2"
     }
 
     _cmake = None
@@ -45,9 +45,8 @@ class LibsquishConan(ConanFile):
                   destination=self._source_subfolder)
 
     def build(self):
-        tools.replace_in_file(os.path.join(self._source_subfolder, "CMakeLists.txt"),
-                              "ARCHIVE DESTINATION lib",
-                              "ARCHIVE DESTINATION lib RUNTIME DESTINATION bin")
+        for patch in self.conan_data["patches"][self.version]:
+            tools.patch(**patch)
         cmake = self._configure_cmake()
         cmake.build()
 
@@ -56,7 +55,7 @@ class LibsquishConan(ConanFile):
             return self._cmake
         self._cmake = CMake(self)
         self._cmake.definitions["BUILD_SQUISH_WITH_OPENMP"] = self.options.openmp
-        self._cmake.definitions["BUILD_SQUISH_WITH_SSE2"] = str(self.options.simd) == "sse"
+        self._cmake.definitions["BUILD_SQUISH_WITH_SSE2"] = str(self.options.simd) == "sse2"
         self._cmake.definitions["BUILD_SQUISH_WITH_ALTIVEC"] = str(self.options.simd) == "altivec"
         self._cmake.definitions["BUILD_SQUISH_EXTRA"] = False
         self._cmake.configure(build_folder=self._build_subfolder)
