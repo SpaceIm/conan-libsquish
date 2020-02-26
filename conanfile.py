@@ -22,7 +22,7 @@ class LibsquishConan(ConanFile):
     default_options = {
         "shared": False,
         "fPIC": True,
-        "openmp": False,
+        "openmp": True,
         "simd_intrinsics": "None"
     }
 
