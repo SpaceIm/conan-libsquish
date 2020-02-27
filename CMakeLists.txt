@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4.3)
+cmake_minimum_required(VERSION 3.0.2)
 project(cmake_wrapper)
 
 if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
@@ -8,8 +8,13 @@ else()
 endif()
 conan_basic_setup()
 
-if(WIN32 AND BUILD_SHARED_LIBS)
-  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-endif()
-
 add_subdirectory("source_subfolder")
+
+target_include_directories(squish PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+  $<INSTALL_INTERFACE:include>
+)
+set_target_properties(squish PROPERTIES CXX_VISIBILITY_PRESET hidden)
+include(GenerateExportHeader)
+generate_export_header(squish)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/squish_export.h DESTINATION include)
